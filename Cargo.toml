@@ -1,0 +1,8 @@
+[package]
+name = "audiosnap"
+version = "0.1.0"
+authors = ["alamminsalo"]
+
+[dependencies]
+hound = "3.4.0"
+clap = "2.31.2"
