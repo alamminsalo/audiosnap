@@ -1,19 +1,25 @@
 extern crate audiosnap;
 extern crate clap;
+extern crate iui;
 
 use clap::{Arg, App};
 use std::str::FromStr;
+
+mod gui;
+mod state;
 
 fn main() {
     let args = App::new("audiosnap")
         .version("0.1")
         .about("Audio transient splitter")
+        .arg(Arg::with_name("cli")
+             .help("Runs in cli mode")
+             .long("cli"))
         .arg(Arg::with_name("input")
              .help("Input file")
              .short("i")
              .long("input")
-             .takes_value(true)
-             .required(true))
+             .takes_value(true))
         .arg(Arg::with_name("output")
              .help("Output file")
              .short("o")
@@ -35,40 +41,35 @@ fn main() {
              .long("debug"))
         .get_matches();
 
-    let inputfile = args.value_of("input").unwrap();
-    let treshold: f32 = f32::from_str(args.value_of("treshold")
-                                      .unwrap_or("0.5")).unwrap();
-    let tolerance: f32 = f32::from_str(args.value_of("tolerance")
-                                       .unwrap_or("0.25")).unwrap();
+    if args.is_present("cli") {
+        if !args.is_present("input") {
+            panic!("input file missing!");
+        }
+        let inputfile = args.value_of("input").unwrap();
+        let treshold: f32 = f32::from_str(args.value_of("treshold")
+                                          .unwrap_or("0.5")).unwrap();
+        let tolerance: f32 = f32::from_str(args.value_of("tolerance")
+                                           .unwrap_or("0.25")).unwrap();
 
-    let (splits_0, max_len) = audiosnap::split(inputfile, treshold);
-    let splits_1 = audiosnap::smooth(&splits_0, tolerance);
+        let data = audiosnap::load_file(inputfile);
+        let splits = audiosnap::split(&data, treshold);
 
-    if args.is_present("debug") {
-        // some debug info
-        println!("Debug info:");
-        println!("input {}", inputfile);
-        println!("treshold {}", treshold);
-        println!("tolerance {}", tolerance);
-        println!("{} splits : {} smoothed", splits_0.len(), splits_1.len());
-        println!("{} samples total", max_len);
+        if args.is_present("debug") {
+            // some debug info
+            println!("Debug info:");
+            println!("input {}", inputfile);
+            println!("treshold {}", treshold);
+            println!("tolerance {}", tolerance);
+            println!("{} splits", splits.len());
+            println!("{} samples total", data.len());
 
-        // print spec
-        audiosnap::print_spec(inputfile);
+            // print spec
+            audiosnap::print_spec(inputfile);
+        }
 
-        // print first,last frames
-        let frame = audiosnap::frame(0, max_len, &splits_1);
-        println!("First frame: [{},{}]", frame.0, frame.1);
-        let frame = audiosnap::frame(splits_1.len() - 1, max_len, &splits_1);
-        println!("Last frame: [{},{}]", frame.0, frame.1);
     } else {
-        println!("{} splits found", splits_1.len());
-    }
-
-    if args.is_present("output") {
-        audiosnap::write_frame(
-            &audiosnap::frame(1, max_len, &splits_1),
-            inputfile,
-            args.value_of("output").unwrap());
+        // Run GUI application
+        gui::start();
     }
 }
+

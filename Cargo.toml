@@ -6,3 +6,4 @@ authors = ["alamminsalo"]
 [dependencies]
 hound = "3.4.0"
 clap = "2.31.2"
+iui = "0.3.0"
