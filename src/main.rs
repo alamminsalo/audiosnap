@@ -1,6 +1,7 @@
 extern crate audiosnap;
 extern crate clap;
 extern crate iui;
+extern crate ui_sys;
 
 use clap::{Arg, App};
 use std::str::FromStr;
