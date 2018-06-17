@@ -1,13 +1,7 @@
-extern crate audiosnap;
 extern crate clap;
-extern crate iui;
-extern crate ui_sys;
 
 use clap::{Arg, App};
 use std::str::FromStr;
-
-mod gui;
-mod state;
 
 fn main() {
     let args = App::new("audiosnap")
@@ -68,9 +62,6 @@ fn main() {
             audiosnap::print_spec(inputfile);
         }
 
-    } else {
-        // Run GUI application
-        gui::start();
-    }
+    } 
 }
 
