@@ -101,7 +101,7 @@ pub fn write_frame(frame: &(u32,u32), data: &Vec<i16>, outputfile: &str) {
 
 // c api
 extern crate libc;
-use libc::{c_char,int16_t,size_t};
+use libc::{c_char,int16_t,size_t,uint32_t};
 use std::ffi::{CStr,CString};
 
 
@@ -135,6 +135,20 @@ pub extern fn c_data(buf: *mut int16_t, _len: size_t) -> size_t {
 #[no_mangle]
 pub extern fn c_split(ceil: int16_t) -> size_t {
     split(ceil as i16)
+}
+
+#[no_mangle]
+pub extern fn c_splits(buf: *mut uint32_t, _len: size_t) -> size_t {
+    let splits = SPLITS.lock().unwrap();
+    // copy contents of values to buf
+    for (i,v) in splits.iter().take(_len).enumerate() {
+        unsafe {
+            let ptr = buf.offset(i as isize) as *mut u32;
+            *ptr = v.clone();
+        }
+    }
+
+    std::cmp::max(splits.len(),_len)
 }
 
 #[no_mangle]
